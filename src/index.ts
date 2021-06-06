@@ -1,14 +1,18 @@
 import "reflect-metadata";
 import { createConnection } from "typeorm";
-import { CosmosBlock } from "./entity/CosmosBlock";
-import { EthBlock } from "./entity/EthBlock";
+
+import { startBridge } from "./bridge";
+import { parseBlock } from "./libraries/cosmos";
 
 createConnection().then(async connection => {
 
-    const ethBlocks = await connection.manager.findOne(EthBlock);
-    console.log("Ethereum Blocks: ", ethBlocks);
+    console.log("=======")
+    console.log("Ethereum <-> Bitsong Bridge")
+    console.log("Staring now...")
+    console.log("=======")
 
-    const cosmosBlocks = await connection.manager.findOne(CosmosBlock);
-    console.log("Cosmos Blocks: ", cosmosBlocks);
+    await startBridge(connection);
+
+    // await parseBlock(1022639)
 
 }).catch(error => console.log(error));
