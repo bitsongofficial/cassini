@@ -1,0 +1,23 @@
+{
+   "name": "bitsong-bridge",
+   "version": "0.0.1",
+   "description": "Ethereum <-> Mainnet Bitsong Bridge",
+   "main": "index.js",
+   "scripts": {
+      "start": "ts-node src/index.ts",
+      "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "author": "dimi",
+   "license": "ISC",
+   "devDependencies": {
+      "@types/node": "^8.0.29",
+      "ts-node": "3.3.0",
+      "typescript": "3.3.3333"
+   },
+   "dependencies": {
+      "mysql": "^2.14.1",
+      "pg": "^8.6.0",
+      "reflect-metadata": "^0.1.10",
+      "typeorm": "0.2.34"
+   }
+}
