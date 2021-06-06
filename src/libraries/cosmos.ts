@@ -38,33 +38,7 @@ export async function parseBlock(height: number) {
             status = TxStatus.Invalid;
         }
 
-        let amount = 0;
-        let from = "";
-        for (let msg of tx.tx.value.msg) {
-
-            // Skip message
-            if (msg.type !== "cosmos-sdk/MsgSend") {
-                continue;
-            }
-
-            // Skip if to is not our address
-            if (msg.value.to_address !== cfg.CosmosBridgeAddress) {
-                continue
-            }
-
-            // Loop balances sent
-            for (let coin of msg.value.amount) {
-
-                // Skip wrong denoms
-                if (coin.denom !== cfg.CosmosBitsongDenom) {
-                    continue;
-                }
-
-                amount += parseInt(coin.amount);
-            }
-
-            from = msg.value.from_address;
-        }
+        let [from, amount] = sumMsgsAmounts(tx)
 
         if (amount > 0) {
 
@@ -88,4 +62,70 @@ export async function parseBlock(height: number) {
 
 
     return txs.length
+}
+
+export function sumMsgsAmounts(tx) {
+
+    let amount = 0;
+    let from = "";
+
+    for (let msg of tx.tx.value.msg) {
+
+        // Skip message
+        if (msg.type !== "cosmos-sdk/MsgSend") {
+            continue;
+        }
+
+        // Skip if to is not our address
+        if (msg.value.to_address !== cfg.CosmosBridgeAddress) {
+            continue
+        }
+
+        // Loop balances sent
+        for (let coin of msg.value.amount) {
+
+            // Skip wrong denoms
+            if (coin.denom !== cfg.CosmosBitsongDenom) {
+                continue;
+            }
+
+            amount += parseInt(coin.amount);
+        }
+
+        from = msg.value.from_address;
+    }
+
+    return [from, amount]
+}
+
+export function getAddressFromMemo(tx: any) {
+    const ETHAddress = tx.tx.value.memo;
+    if (!ethers.utils.isAddress(ETHAddress)) {
+        return null;
+    }
+
+    return ETHAddress
+}
+
+// This function double check that a specific tx hash has correct amount, from and to
+export async function checkTxAmounts(hash: string, internalAmount: number, internalFrom: string, to: string) {
+    const client = setupClient();
+
+    const tx = await client.getTx(hash)
+    const ETHAddress = getAddressFromMemo(tx)
+
+    // Check valid address
+    if (ETHAddress !== to) {
+        return false
+    }
+
+    // Check valid amount
+    let [from, amount] = sumMsgsAmounts(tx)
+
+    if (amount !== internalAmount || from !== internalFrom) {
+        console.log("OK", internalAmount, amount)
+        return false;
+    }
+
+    return true;
 }

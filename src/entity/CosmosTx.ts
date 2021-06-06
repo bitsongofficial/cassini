@@ -32,4 +32,10 @@ export class CosmosTx {
 
     @Column()
     status: string;
+
+    @Column()
+    eth_nonce: number;
+
+    @Column()
+    eth_hash: string;
 }

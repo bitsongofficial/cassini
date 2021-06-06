@@ -27,6 +27,8 @@ export async function saveCosmosTransaction(data: any) {
     tx.status = data.status;
     tx.timestamp = data.timestamp;
     tx.fee = calculateBridgeFee(data.amount)
+    tx.eth_hash = "";
+    tx.eth_nonce = 0;
 
     return await repo.save(tx)
 }
