@@ -4,6 +4,7 @@ import { TxStatus } from "../config";
 import { CosmosTx } from "../entity/CosmosTx";
 import { checkTxAmounts } from "./cosmos";
 import { cfg } from "../config"
+import { calculateBridgeFee, convertCosmosBalanceToWei } from "./utils";
 
 const ERC20_ABI = [
     "function totalSupply() public view returns (uint256)",
@@ -33,13 +34,13 @@ function setupTokenContract(readOnly = true) {
     return new ethers.Contract(cfg.EthereumTokenContractAddress, ERC20_ABI, readOnly ? provider : signer);
 }
 
-async function queryBalance() {
+async function queryBalance(address: string) {
 
     const erc20 = setupTokenContract()
 
-    const pippo = await erc20.balanceOf("0x1c1f86b0d69FDc70f26468f755Ea5D93E123da68")
+    const bal = await erc20.balanceOf(address)
 
-    console.log(pippo.toString())
+    return bal;
 }
 
 
@@ -51,7 +52,19 @@ export async function processQueue() {
         status: TxStatus.Processing
     })
 
-    for (const tx of pendingTxs) {
+    // Last nonce 
+    var nonce = null;
+    const lastTx = await repo.findOne({
+        order: {
+            eth_nonce: "DESC",
+        }
+    });
+
+    if (lastTx !== undefined) {
+        nonce = lastTx.eth_nonce;
+    }
+
+    for (let tx of pendingTxs) {
 
         // Double check onchain data with db data
         const validTx = await checkTxAmounts(tx.hash, tx.amount, tx.from, tx.to);
@@ -62,10 +75,23 @@ export async function processQueue() {
 
         const erc20 = setupTokenContract(false)
 
-        const test = await erc20.transfer(tx.to, ethers.utils.formatUnits(1, 'wei'), { gasLimit: 80000 })
+        let txOptions = {
+            gasLimit: 80000,
+            nonce: nonce + 1,
+        }
 
-        console.log(test)
+        const amountToSend = tx.amount - tx.fee;
+
+        const receipt = await erc20.transfer(tx.to, convertCosmosBalanceToWei(amountToSend), txOptions)
+
+        tx.eth_nonce = receipt.nonce;
+        tx.eth_hash = receipt.hash;
+        tx.migrated_amount = amountToSend;
+        tx.status = TxStatus.Completed;
+        await repo.save(tx)
+
+        console.log(`Relayed ${tx.amount} from Cosmos to Ethereum. Tx: ${tx.eth_hash}`)
+        nonce++;
     }
 
 }
-

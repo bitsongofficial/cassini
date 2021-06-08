@@ -1,6 +1,7 @@
 import { getRepository } from "typeorm";
 import { CosmosTx } from "../entity/CosmosTx";
 import { cfg } from "../config"
+import { ethers } from "ethers";
 
 export async function getCosmosTransaction(hash: string) {
 
@@ -38,4 +39,14 @@ export function calculateBridgeFee(amount: number) {
     const fee = amount * cfg.BridgeFeePercent;
 
     return Math.max(cfg.BridgeMinFee, fee)
+}
+
+export function convertCosmosBalanceToWei(amount: number) {
+
+    // Cosmos has 6 decimals
+    // ETH has 18 decimals
+
+    const coefficent = ethers.BigNumber.from(1000000000000);
+    var bnAmount = ethers.BigNumber.from(amount).mul(coefficent)
+    return bnAmount;
 }

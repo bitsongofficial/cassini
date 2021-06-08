@@ -3,6 +3,7 @@ import { createConnection } from "typeorm";
 
 import { startBridge } from "./bridge";
 import { parseBlock } from "./libraries/cosmos";
+import { processQueue } from "./libraries/ethereum";
 
 createConnection().then(async connection => {
 
@@ -14,5 +15,7 @@ createConnection().then(async connection => {
     await startBridge(connection);
 
     // await parseBlock(1022639)
+
+    // await processQueue()
 
 }).catch(error => console.log(error));

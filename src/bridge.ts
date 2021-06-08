@@ -6,14 +6,22 @@ import { cfg } from "./config"
 
 import { getRepository } from "typeorm";
 import { getCurrentHeight, parseBlock } from "./libraries/cosmos";
+import { processQueue } from "./libraries/ethereum";
 
 
 export async function startBridge(connection: Connection) {
 
+    var syncing = false;
+
     // Start Cosmos Blocks Parsing
     setInterval(async () => {
+        if (syncing) {
+            return;
+        }
+
         console.log("Querying cosmos...")
 
+        syncing = true;
         const cosmosBlocksRepository = getRepository(CosmosBlock);
         const lastBlock = await cosmosBlocksRepository.findOne({
             order: {
@@ -23,6 +31,7 @@ export async function startBridge(connection: Connection) {
 
         const lastHeight = lastBlock ? lastBlock.height : 0;
         await syncCosmos(connection, lastHeight)
+        syncing = false;
 
     }, cfg.CosmosWatchInterval)
 
@@ -41,6 +50,15 @@ export async function startBridge(connection: Connection) {
         await syncEthereum(connection, lastHeight)
 
     }, cfg.EtheruemWatchInterval)
+
+
+    // Start Ethereum Transaction Sending
+    setInterval(async () => {
+        console.log("Sending pending Ethereum txs...")
+
+        await processQueue();
+    }, cfg.EthereumSendingInterval)
+
 }
 
 
