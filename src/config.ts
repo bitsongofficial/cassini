@@ -16,6 +16,7 @@ export const cfg = {
     EthereumMnemonic: process.env.ETHEREUM_MNEMONIC,
     EthereumTokenContractAddress: process.env.ETHEREUM_TOKEN_CONTRACT_ADDRESS,
     EthereumBridgeContractAddress: process.env.ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+    EthereumLogTopics: process.env.ETHEREUM_LOG_TOPICS,
 
     BridgeMinFee: parseInt(process.env.BRIDGE_MIN_FEE),
     BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT)

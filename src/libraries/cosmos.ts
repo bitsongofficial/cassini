@@ -2,9 +2,24 @@ import { CosmosClient } from "@cosmjs/launchpad";
 import { cfg, TxStatus } from "../config"
 import { getCosmosTransaction, saveCosmosTransaction } from "./utils";
 import { ethers } from "ethers";
+import { bech32, bech32m } from "bech32";
 
 function setupClient() {
     return new CosmosClient(cfg.CosmosApi)
+}
+
+export async function isAddress(address: string) {
+    try {
+        let decoded = bech32.decode(address);
+
+        if (decoded) {
+            return true;
+        }
+    } catch(e) {
+        return false
+    }
+
+    return false
 }
 
 export async function getCurrentHeight() {

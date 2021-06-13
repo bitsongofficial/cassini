@@ -2,6 +2,19 @@ import { getRepository } from "typeorm";
 import { CosmosTx } from "../entity/CosmosTx";
 import { cfg } from "../config"
 import { ethers } from "ethers";
+import { EthereumTx } from "../entity/EthereumTx";
+
+
+export async function getEthereumTransaction(hash: string) {
+
+    const repo = getRepository(EthereumTx)
+
+    const tx = await repo.findOne({
+        hash: hash
+    })
+
+    return tx
+}
 
 export async function getCosmosTransaction(hash: string) {
 
@@ -12,6 +25,30 @@ export async function getCosmosTransaction(hash: string) {
     })
 
     return tx
+}
+
+export async function saveEthereumTransaction(data: any) {
+    const repo = getRepository(EthereumTx)
+
+    // Calculaate fee
+    var fee = ethers.BigNumber.from(data.amount)
+    fee = fee.div(100/(cfg.BridgeFeePercent*100))
+
+    let tx = new EthereumTx();
+
+    tx.height = data.height;
+    tx.from = data.from;
+    tx.to = data.to;
+    tx.amount = data.amount;
+    tx.migrated_amount = 0;
+    tx.hash = data.hash;
+    tx.status = data.status;
+    tx.created_at = new Date();
+    tx.fee = fee.toString();
+    tx.cosmos_hash = "";
+    tx.cosmos_nonce = 0;
+
+    return await repo.save(tx)
 }
 
 export async function saveCosmosTransaction(data: any) {
@@ -35,7 +72,6 @@ export async function saveCosmosTransaction(data: any) {
 }
 
 export function calculateBridgeFee(amount: number) {
-
     const fee = amount * cfg.BridgeFeePercent;
 
     return Math.max(cfg.BridgeMinFee, fee)

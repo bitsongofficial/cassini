@@ -16,6 +16,7 @@
    },
    "dependencies": {
       "@cosmjs/launchpad": "^0.25.4",
+      "bech32": "^2.0.0",
       "dotenv": "^8.6.0",
       "ethers": "^5.3.0",
       "mysql": "^2.14.1",

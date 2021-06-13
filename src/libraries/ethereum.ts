@@ -2,9 +2,9 @@ import { ethers } from "ethers";
 import { getRepository } from "typeorm";
 import { TxStatus } from "../config";
 import { CosmosTx } from "../entity/CosmosTx";
-import { checkTxAmounts } from "./cosmos";
+import { checkTxAmounts, isAddress } from "./cosmos";
 import { cfg } from "../config"
-import { calculateBridgeFee, convertCosmosBalanceToWei } from "./utils";
+import { calculateBridgeFee, convertCosmosBalanceToWei, getEthereumTransaction, saveEthereumTransaction } from "./utils";
 
 const ERC20_ABI = [
     "function totalSupply() public view returns (uint256)",
@@ -16,6 +16,8 @@ const ERC20_ABI = [
     "event Transfer(address indexed from, address indexed to, uint256 value)",
     "event Approval(address indexed owner, address indexed spender, uint256 value)",
 ];
+
+const DEPOSIT_ABI = ["event hasBeenAdded(address sender, address recipient, string btsgBech32, uint256 amount, address contractAddress)"]
 
 function setupProvider(): ethers.providers.Provider {
     const provider = new ethers.providers.JsonRpcProvider(cfg.EthereumApi)
@@ -43,6 +45,60 @@ async function queryBalance(address: string) {
     return bal;
 }
 
+export async function parseBlock(height: number) {
+    console.log(`Parsing Ethereum Mainnet Block #${height}...`)
+    const provider = setupProvider();
+
+    const contract = new ethers.utils.Interface(DEPOSIT_ABI);
+
+    const filter = {
+        address: cfg.EthereumBridgeContractAddress,
+        fromBlock: height,
+        toBlock: height,
+        topics: [cfg.EthereumLogTopics]
+    };
+
+    const events = await provider.getLogs(filter)
+    const parsedEvents = events.map(log => contract.parseLog(log))
+
+    var count = 0;
+    for (let i = 0; i < events.length; i++) {
+
+        const dbTx = await getEthereumTransaction(events[i].transactionHash)
+
+        if (dbTx !== undefined) {
+            console.log(`TX ${events[i].transactionHash} already indexed`)
+            continue;
+        }
+        var status = TxStatus.Processing;
+
+        // Check cosmos address
+        if (!isAddress(parsedEvents[i].args['btsgBech32'])){
+            status = TxStatus.Invalid;
+        }
+
+        let data = {
+            height,
+            amount: ethers.BigNumber.from(parsedEvents[i].args['amount']).toString(),
+            from: parsedEvents[i].args['sender'],
+            to: parsedEvents[i].args['btsgBech32'],
+            hash: events[i].transactionHash,
+            status,
+        }
+        const savedTx = await saveEthereumTransaction(data)
+        console.log(`Added tx to queue with id ${savedTx.id} hash: ${savedTx.hash}`)
+        count++;
+    }
+
+    return count;
+}
+
+export async function getCurrentHeight() {
+
+    const provider = setupProvider();
+    const block = await provider.getBlockNumber();
+    return block;
+}
 
 export async function processQueue() {
 
