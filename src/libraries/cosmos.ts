@@ -165,6 +165,7 @@ export async function parseBlock(height: number) {
                 timestamp: tx.timestamp
             }
 
+            console.log(data)
             const savedTx = await saveCosmosTransaction(data)
             console.log(`Added tx to queue with id ${savedTx.id} hash: ${savedTx.hash}`)
 
@@ -235,8 +236,8 @@ export async function checkTxAmounts(hash: string, internalAmount: number, inter
     // Check valid amount
     let [from, amount] = sumMsgsAmounts(tx)
 
-    if (amount !== internalAmount || from !== internalFrom) {
-        console.log("OK", internalAmount, amount)
+    if (amount !== internalAmount.toString() || from !== internalFrom) {
+        console.log("Wrong amounts", internalAmount, amount, from, internalFrom)
         return false;
     }
 
