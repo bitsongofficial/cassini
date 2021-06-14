@@ -137,6 +137,7 @@ export async function processQueue() {
         let txOptions = {
             gasLimit: 80000,
             nonce: nonce + 1,
+            gasPrice: ethers.BigNumber.from("700000000000") // Todo calculate automatically, 700gwei
         }
 
         const amountToSend = tx.amount - tx.fee;
