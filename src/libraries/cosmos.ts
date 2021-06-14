@@ -236,7 +236,7 @@ export async function checkTxAmounts(hash: string, internalAmount: number, inter
     // Check valid amount
     let [from, amount] = sumMsgsAmounts(tx)
 
-    if (amount !== internalAmount.toString() || from !== internalFrom) {
+    if (amount.toString() !== internalAmount.toString() || from !== internalFrom) {
         console.log("Wrong amounts", internalAmount, amount, from, internalFrom)
         return false;
     }
