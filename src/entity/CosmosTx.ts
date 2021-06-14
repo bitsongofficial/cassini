@@ -21,13 +21,13 @@ export class CosmosTx {
     @Column()
     to: string;
 
-    @Column()
+    @Column({ type: "bigint"})
     amount: number;
 
-    @Column()
+    @Column({ type: "bigint"})
     migrated_amount: number;
 
-    @Column()
+    @Column({ type: "bigint"})
     fee: number;
 
     @Column()
