@@ -1,11 +1,97 @@
-import { CosmosClient } from "@cosmjs/launchpad";
+import { 
+    CosmosClient, 
+    Secp256k1HdWallet,
+    SigningCosmosClient,
+    coins,
+    GasPrice,
+    BroadcastMode
+} from "@cosmjs/launchpad";
+import {Secp256k1HdWalletOptions} from "@cosmjs/amino"
 import { cfg, TxStatus } from "../config"
 import { getCosmosTransaction, saveCosmosTransaction } from "./utils";
 import { ethers } from "ethers";
 import { bech32, bech32m } from "bech32";
+import { getRepository } from "typeorm";
+import { EthereumTx } from "../entity/EthereumTx";
+import * as eth from "./ethereum"
+import BN from "bignumber.js"
 
 function setupClient() {
     return new CosmosClient(cfg.CosmosApi)
+}
+
+async function setupSigningClient() {
+
+    let options: Secp256k1HdWalletOptions = {
+        bip39Password: undefined,
+        hdPaths: undefined,
+        prefix: "bitsong",
+    }
+
+    const wallet = await Secp256k1HdWallet.fromMnemonic(cfg.CosmosMnemonic, options);
+    const [{ address }] = await wallet.getAccounts();
+    const client = new SigningCosmosClient(cfg.CosmosApi, address, wallet, GasPrice.fromString(cfg.CosmosGasPrice));
+    return client;
+}
+
+export async function processQueue() {
+
+    const repo = getRepository(EthereumTx)
+
+    const pendingTxs = await repo.find({
+        status: TxStatus.Processing
+    })
+
+    // Last nonce 
+    var nonce = null;
+    const lastTx = await repo.findOne({
+        order: {
+            cosmos_nonce: "DESC",
+        }
+    });
+
+    if (lastTx !== undefined) {
+        nonce = lastTx.cosmos_nonce;
+    }
+
+    // Current height
+    var curBlock = await eth.getCurrentHeight()
+
+    for (let tx of pendingTxs) {
+
+        // Check confirmations
+        var delta = Math.abs(curBlock - tx.height);
+        if (delta > 21) {
+
+            // Convert amount to cosmos format
+            const amount = ethers.BigNumber.from(tx.amount);
+            const amountToSend = amount.sub(tx.fee);
+
+            const convAmount = parseInt(convertWeiToUbtsg(amountToSend.toString()));
+
+            // We can send transaction cosmos side
+            const client = await setupSigningClient();
+
+            const result = await client.sendTokens(tx.to, coins(convAmount, cfg.CosmosDenom), "bridge");
+
+            console.log(result)
+
+            // todo
+            // // tx.cosmos_nonce = ;
+            // tx.cosmos_hash = result.transactionHash;
+            // tx.migrated_amount = parseInt(amountToSend.toString());
+            // tx.status = TxStatus.Completed;
+
+            // await repo.save(tx)
+        }
+    }
+}
+
+export const convertWeiToUbtsg = function (value) {
+    value = new BN(value)
+    value = value.times(new BN(0.000000000000000001))
+
+    return new BN(value).times(new BN(1000000)).toFixed(0)
 }
 
 export async function isAddress(address: string) {

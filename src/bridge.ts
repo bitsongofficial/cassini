@@ -5,8 +5,7 @@ import { EthBlock } from "./entity/EthBlock";
 import { cfg } from "./config"
 
 import { getRepository } from "typeorm";
-import { getCurrentHeight, parseBlock } from "./libraries/cosmos";
-import { processQueue } from "./libraries/ethereum";
+import { getCurrentHeight, parseBlock, processQueue } from "./libraries/cosmos";
 
 import * as eth from "./libraries/ethereum";
 
@@ -15,26 +14,26 @@ export async function startBridge(connection: Connection) {
     var syncing = false;
 
     // Start Cosmos Blocks Parsing
-    // setInterval(async () => {
-    //     if (syncing) {
-    //         return;
-    //     }
+    setInterval(async () => {
+        if (syncing) {
+            return;
+        }
 
-    //     console.log("Querying cosmos...")
+        console.log("Querying cosmos...")
 
-    //     syncing = true;
-    //     const cosmosBlocksRepository = getRepository(CosmosBlock);
-    //     const lastBlock = await cosmosBlocksRepository.findOne({
-    //         order: {
-    //             height: "DESC",
-    //         }
-    //     })
+        syncing = true;
+        const cosmosBlocksRepository = getRepository(CosmosBlock);
+        const lastBlock = await cosmosBlocksRepository.findOne({
+            order: {
+                height: "DESC",
+            }
+        })
 
-    //     const lastHeight = lastBlock ? lastBlock.height : 0;
-    //     await syncCosmos(connection, lastHeight)
-    //     syncing = false;
+        const lastHeight = lastBlock ? lastBlock.height : cfg.CosmosStartHeight;
+        await syncCosmos(connection, lastHeight)
+        syncing = false;
 
-    // }, cfg.CosmosWatchInterval)
+    }, cfg.CosmosWatchInterval)
 
     var syncingEth = false;
 
@@ -55,7 +54,7 @@ export async function startBridge(connection: Connection) {
             }
         })
 
-        const lastHeight = lastBlock ? lastBlock.height : 12110381;
+        const lastHeight = lastBlock ? lastBlock.height : cfg.EthereumStartHeight;
         await syncEthereum(connection, lastHeight)
         syncingEth = false;
 
@@ -63,15 +62,22 @@ export async function startBridge(connection: Connection) {
 
 
     // Start Ethereum Transaction Sending
-    // setInterval(async () => {
-    //     console.log("Sending pending Ethereum txs...")
+    setInterval(async () => {
+        console.log("Sending pending Ethereum txs...")
 
-    //     await processQueue();
-    // }, cfg.EthereumSendingInterval)
+        await eth.processQueue();
+    }, cfg.EthereumSendingInterval)
+
+    // Start Cosmos Transaction Sending
+    setInterval(async () => {
+        console.log("Sending pending Cosmos txs...")
+
+        await processQueue();
+    }, cfg.CosmosSendingInterval)
 
 }
 
-
+// Cosmos watcher
 async function syncCosmos(connection: Connection, startHeight: number) {
 
     console.log(`Start Syncing Cosmos From Block #${startHeight}`)
@@ -99,7 +105,7 @@ async function syncCosmos(connection: Connection, startHeight: number) {
 
 }
 
-
+// Ethereum Watcher
 async function syncEthereum(connection: Connection, startHeight: number) {
     console.log(`Start Syncing Ethereum From Block #${startHeight}`)
     const currentHeight = await eth.getCurrentHeight();
@@ -113,16 +119,15 @@ async function syncEthereum(connection: Connection, startHeight: number) {
 
         const tx_count = await eth.parseBlock(b)
 
-        /* Save block in db
+        // Save block in db
         const block = new EthBlock();
         block.height = b;
         block.tx_count = tx_count;
         block.parsed_at = new Date();
 
         // Save new block in db
-        await connection.manager.save(block)*/
+        await connection.manager.save(block)
     }
-    console.log(currentHeight)
 }
 
 async function blockExistsInDB(entity: any, height: number) {
