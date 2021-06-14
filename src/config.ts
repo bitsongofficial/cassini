@@ -31,5 +31,6 @@ export enum TxStatus {
     Error = "Error",
     Processing = "Processing",
     Invalid = "Invalid",
-    Completed = "Completed"
+    Completed = "Completed",
+    Waiting = "Waiting Confirmation"
 }

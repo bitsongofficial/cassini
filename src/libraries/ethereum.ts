@@ -129,6 +129,9 @@ export async function processQueue() {
             continue
         }
 
+        tx.status = TxStatus.Waiting;
+        await repo.save(tx)
+
         const erc20 = setupTokenContract(false)
 
         let txOptions = {

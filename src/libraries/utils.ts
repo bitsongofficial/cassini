@@ -40,7 +40,7 @@ export async function saveEthereumTransaction(data: any) {
     tx.from = data.from;
     tx.to = data.to;
     tx.amount = data.amount;
-    tx.migrated_amount = 0;
+    tx.migrated_amount = "0";
     tx.hash = data.hash;
     tx.status = data.status;
     tx.created_at = new Date();

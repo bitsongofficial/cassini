@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Double, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class EthereumTx {
@@ -23,7 +23,7 @@ export class EthereumTx {
     amount: string; // big number
 
     @Column()
-    migrated_amount: number;
+    migrated_amount: string;
 
     @Column()
     fee: string;

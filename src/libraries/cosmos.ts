@@ -15,6 +15,7 @@ import { getRepository } from "typeorm";
 import { EthereumTx } from "../entity/EthereumTx";
 import * as eth from "./ethereum"
 import BN from "bignumber.js"
+import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
 
 function setupClient() {
     return new CosmosClient(cfg.CosmosApi)
@@ -22,14 +23,24 @@ function setupClient() {
 
 async function setupSigningClient() {
 
+     const path: HdPath = [
+        Slip10RawIndex.hardened(44),
+        Slip10RawIndex.hardened(639),
+        Slip10RawIndex.hardened(0),
+        Slip10RawIndex.normal(0),
+        Slip10RawIndex.normal(0),
+     ];
+     
     let options: Secp256k1HdWalletOptions = {
         bip39Password: undefined,
-        hdPaths: undefined,
+        hdPaths: [path],
         prefix: "bitsong",
     }
 
     const wallet = await Secp256k1HdWallet.fromMnemonic(cfg.CosmosMnemonic, options);
     const [{ address }] = await wallet.getAccounts();
+
+    console.log(address)
     const client = new SigningCosmosClient(cfg.CosmosApi, address, wallet, GasPrice.fromString(cfg.CosmosGasPrice));
     return client;
 }
@@ -63,6 +74,9 @@ export async function processQueue() {
         var delta = Math.abs(curBlock - tx.height);
         if (delta > 21) {
 
+            tx.status = TxStatus.Waiting;
+            await repo.save(tx)
+
             // Convert amount to cosmos format
             const amount = ethers.BigNumber.from(tx.amount);
             const amountToSend = amount.sub(tx.fee);
@@ -74,15 +88,13 @@ export async function processQueue() {
 
             const result = await client.sendTokens(tx.to, coins(convAmount, cfg.CosmosDenom), "bridge");
 
-            console.log(result)
-
             // todo
-            // // tx.cosmos_nonce = ;
-            // tx.cosmos_hash = result.transactionHash;
-            // tx.migrated_amount = parseInt(amountToSend.toString());
-            // tx.status = TxStatus.Completed;
+            tx.cosmos_nonce = 0;
+            tx.cosmos_hash = result.transactionHash;
+            tx.migrated_amount = amountToSend.toString();
+            tx.status = TxStatus.Completed;
 
-            // await repo.save(tx)
+            await repo.save(tx)
         }
     }
 }
@@ -186,7 +198,7 @@ export function sumMsgsAmounts(tx) {
         for (let coin of msg.value.amount) {
 
             // Skip wrong denoms
-            if (coin.denom !== cfg.CosmosBitsongDenom) {
+            if (coin.denom !== cfg.CosmosDenom) {
                 continue;
             }
 
