@@ -108,18 +108,6 @@ export async function processQueue() {
         status: TxStatus.Processing
     })
 
-    // Last nonce 
-    var nonce = null;
-    const lastTx = await repo.findOne({
-        order: {
-            eth_nonce: "DESC",
-        }
-    });
-
-    if (lastTx !== undefined) {
-        nonce = lastTx.eth_nonce;
-    }
-
     for (let tx of pendingTxs) {
 
         // Double check onchain data with db data
@@ -136,8 +124,8 @@ export async function processQueue() {
 
         let txOptions = {
             gasLimit: 80000,
-            nonce: nonce + 1,
-            gasPrice: ethers.BigNumber.from("700000000000") // Todo calculate automatically, 700gwei
+            nonce: tx.eth_nonce,
+            gasPrice: ethers.BigNumber.from("10000000000") // Todo calculate automatically, 700gwei
         }
 
         const amountToSend = tx.amount - tx.fee;
@@ -151,7 +139,6 @@ export async function processQueue() {
         await repo.save(tx)
 
         console.log(`Relayed ${tx.amount} from Cosmos to Ethereum. Tx: ${tx.eth_hash}`)
-        nonce++;
     }
 
 }

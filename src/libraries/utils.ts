@@ -54,6 +54,18 @@ export async function saveEthereumTransaction(data: any) {
 export async function saveCosmosTransaction(data: any) {
     const repo = getRepository(CosmosTx)
 
+    // Get nonce
+    var nonce = 0;
+    const lastTx = await repo.findOne({
+        order: {
+            eth_nonce: "DESC",
+        }
+    });
+
+    if (lastTx !== undefined) {
+        nonce = lastTx.eth_nonce;
+    }
+
     let tx = new CosmosTx();
 
     tx.height = data.height;
@@ -66,7 +78,7 @@ export async function saveCosmosTransaction(data: any) {
     tx.timestamp = data.timestamp;
     tx.fee = calculateBridgeFee(data.amount)
     tx.eth_hash = "";
-    tx.eth_nonce = 0;
+    tx.eth_nonce = nonce;
 
     return await repo.save(tx)
 }
