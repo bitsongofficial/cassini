@@ -98,7 +98,7 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 
 1. Install bitsongcli binary at version [v0.7.0](https://github.com/bitsongofficial/go-bitsong/releases/tag/v0.7.0)
 1. Transfer the tokens you want to bridge with the recepient ethereum address in the memo field of the transaction:
-1. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}"`
+1. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://188.34.196.24:26657 --chain-id bitsong-bridge-1`
 1. You will receive tokens after a few minutes on Ethereum. Depending on network congestion
 
 ## Test transfer from Ethereum to Mainnet
