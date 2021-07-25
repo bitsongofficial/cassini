@@ -101,7 +101,7 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 1. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}"`
 1. You will receive tokens after a few minutes on Ethereum. Depending on network congestion
 
-## Test traansfer from Ethereum to Mainnet
+## Test transfer from Ethereum to Mainnet
 
 1. Approve the bridge contract as spender of your BTTT tokens. This can be done on Etherscan with MetaMask, visiting https://ropsten.etherscan.io/address/0x4d439d3a5bad256433461b80a06c4ab452734a4a#writeContract and choosing "approve"
 
