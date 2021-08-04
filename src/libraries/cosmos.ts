@@ -153,7 +153,7 @@ export async function parseBlock(height: number) {
         }
 
         // Set errored txs as invalid
-        if (tx.code !== undefined) {
+        if (tx.code !== 0) {
             status = TxStatus.Invalid;
         }
 
