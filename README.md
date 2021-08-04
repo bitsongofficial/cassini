@@ -98,8 +98,8 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 **Ethereum Token Contract Address**
 `0x4d439d3a5bad256433461b80a06c4ab452734a4a`
 
-**Min amount accepeted by the relayer to transfer**
-10 BTTT
+**Min amount accepted by the relayer to transfer**
+`10 BTTT`
 
 ## Test transfer from Cosmos to Ethereum
 
@@ -108,7 +108,7 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
   - `chmod +x bitsongcli`
   - `./bitsongcli version`  
 3. Transfer the tokens you want to bridge with the recepient ethereum address in the memo field of the transaction:
-4. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://bridge-test.bitsong.network:26657 --chain-id bitsong-bridge-1` **Unit**: 1BTSG = 1000000ubtsg
+4. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://bridge-test.bitsong.network:26657 --chain-id bitsong-bridge-1` **Unit**: 1BTTT = 1000000ubtsg
 5. You will receive tokens after a few minutes on Ethereum. Depending on network congestion
 
 ## Test transfer from Ethereum to Cosmos
