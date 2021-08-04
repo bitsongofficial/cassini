@@ -63,7 +63,7 @@ export async function saveCosmosTransaction(data: any) {
     });
 
     if (lastTx !== undefined) {
-        nonce = lastTx.eth_nonce;
+        nonce = lastTx.eth_nonce + 1;
     }
 
     let tx = new CosmosTx();

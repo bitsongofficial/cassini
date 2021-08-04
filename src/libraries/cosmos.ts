@@ -2,6 +2,7 @@ import {
     CosmosClient, 
     Secp256k1HdWallet,
     SigningCosmosClient,
+    parseCoins,
     coins,
     GasPrice,
     BroadcastMode
@@ -151,6 +152,11 @@ export async function parseBlock(height: number) {
             status = TxStatus.Invalid;
         }
 
+        // Set errored txs as invalid
+        if (tx.code !== undefined) {
+            status = TxStatus.Invalid;
+        }
+
         let [from, amount] = sumMsgsAmounts(tx)
 
         if (amount > 0) {
@@ -183,30 +189,41 @@ export function sumMsgsAmounts(tx) {
     let amount = 0;
     let from = "";
 
-    for (let msg of tx.tx.value.msg) {
+    if (tx.logs !== undefined) {
 
-        // Skip message
-        if (msg.type !== "cosmos-sdk/MsgSend") {
-            continue;
-        }
+        for (let log of tx.logs) {
+            for (let event of log.events) {
 
-        // Skip if to is not our address
-        if (msg.value.to_address !== cfg.CosmosBridgeAddress) {
-            continue
-        }
+                if (event.type === "transfer") {
+                    
+                    let recipient = event.attributes.find(a => a.key === "recipient");
+                    let sender = event.attributes.find(a => a.key === "sender");
+                    let amountData = event.attributes.find(a => a.key === "amount");
 
-        // Loop balances sent
-        for (let coin of msg.value.amount) {
+                    if (recipient == undefined || sender == undefined || amount  == undefined) {
+                        continue;
+                    }
 
-            // Skip wrong denoms
-            if (coin.denom !== cfg.CosmosDenom) {
-                continue;
+                    if (recipient.value !== cfg.CosmosBridgeAddress) {
+                        continue;
+                    }
+
+
+                    let coins = parseCoins(amountData.value);
+
+                    for (let coin of coins) {
+                        if (coin.denom !== cfg.CosmosDenom) {
+                            continue;
+                        }
+    
+                        amount += parseInt(coin.amount);
+                    }
+
+                    from = sender.value;
+                }
             }
-
-            amount += parseInt(coin.amount);
         }
 
-        from = msg.value.from_address;
     }
 
     return [from, amount]
