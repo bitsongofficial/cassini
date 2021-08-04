@@ -113,8 +113,17 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 
 ![screenshot1](./images/screenshot1.png)
 
+**_spender** must be set to the Bridge Contract address `0x234745EcfeDfa32113D8203462A23ba410e0FC87`
+
+**_value** must be greater than the amount you want to transfer, in wei. you can use https://eth-converter.com/ to convert. For example, if you want to transfer 10 BTTT, you must set it greater than `10000000000000000000`
+
+
 2. Transfer BTTT tokens to the bridge contract using the "deposit" function. This can be don on Etherscan with MetaMask: https://ropsten.etherscan.io/address/0x234745EcfeDfa32113D8203462A23ba410e0FC87#writeContract. Set as target the mainnet address that should receive your tokens
 
 ![screenshot2](./images/screenshot2.png)
+
+**amount** is the amount of tokens you want to transfer, in wei unit.
+**target** is the bitsong address that will receive the tokens.
+
 
 3. After 12 confirmations on Ethereum network tokens will be transfered to your mainnet address.
