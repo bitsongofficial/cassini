@@ -21,8 +21,9 @@ export const cfg = {
     EthereumTokenContractAddress: process.env.ETHEREUM_TOKEN_CONTRACT_ADDRESS,
     EthereumBridgeContractAddress: process.env.ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
     EthereumLogTopics: process.env.ETHEREUM_LOG_TOPICS,
-    EthereumStartHeight: parseInt(process.env.ETHREUM_STARAT_HEIGHT),
-
+    EthereumStartHeight: parseInt(process.env.ETHEREUM_START_HEIGHT),
+    EthereumConfirmations: parseInt(process.env.ETHEREUM_CONFIRMATIONS),
+    
     BridgeMinFee: parseInt(process.env.BRIDGE_MIN_FEE),
     BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT)
 }

@@ -72,7 +72,7 @@ export async function processQueue() {
 
         // Check confirmations
         var delta = Math.abs(curBlock - tx.height);
-        if (delta > 21) {
+        if (delta > cfg.EthereumConfirmations) {
 
             tx.status = TxStatus.Waiting;
             await repo.save(tx)

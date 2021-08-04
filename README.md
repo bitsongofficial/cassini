@@ -59,7 +59,8 @@ Copy `.env.example` file to `.env` and personalize to your needs
 | ETHEREUM_TOKEN_CONTRACT_ADDRESS  | Ethereum BTSG Token Contract Address                                 |
 | ETHEREUM_BRIDGE_CONTRACT_ADDRESS | Ethereum Deposit/Bridge Contract Address                             |
 | ETHEREUM_LOG_TOPICS              | Topic to look for in Ethereum transaction Logs                       |
-| ETHREUM_STARAT_HEIGHT            | Start height at which look for `hasBeenAddedd` logs                  |
+| ETHEREUM_START_HEIGHT            | Start height at which look for `hasBeenAddedd` logs                  |
+| ETHEREUM_CONFIRMATIONS           | Min number of confirmation before relay from ETH to Cosmos           |
 | BRIDGE_MIN_FEE                   | Mimimum fee for relay in BTSG                                        |
 | BRIDGE_FEE_PERCENT               | Fee % for tx relay (default 0.5%)                                    |
 
@@ -97,17 +98,20 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 **Ethereum Token Contract Address**
 `0x4d439d3a5bad256433461b80a06c4ab452734a4a`
 
-## Test transfer from Mainnet to Ethereum
+**Min amount accepeted by the relayer to transfer**
+10 BTTT
+
+## Test transfer from Cosmos to Ethereum
 
 1. Install bitsongcli binary at version [v0.7.1](https://github.com/bitsongofficial/go-bitsong/releases/tag/v0.7.1)
   - `wget https://github.com/bitsongofficial/go-bitsong/releases/download/v0.7.1/bitsongcli`
   - `chmod +x bitsongcli`
   - `./bitsongcli version`  
 3. Transfer the tokens you want to bridge with the recepient ethereum address in the memo field of the transaction:
-4. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://bridge-test.bitsong.network:26657 --chain-id bitsong-bridge-1`
+4. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://bridge-test.bitsong.network:26657 --chain-id bitsong-bridge-1` **Unit**: 1BTSG = 1000000ubtsg
 5. You will receive tokens after a few minutes on Ethereum. Depending on network congestion
 
-## Test transfer from Ethereum to Mainnet
+## Test transfer from Ethereum to Cosmos
 
 1. Approve the bridge contract as spender of your BTTT tokens. This can be done on Etherscan with MetaMask, visiting https://ropsten.etherscan.io/address/0x4d439d3a5bad256433461b80a06c4ab452734a4a#writeContract and choosing "approve"
 
