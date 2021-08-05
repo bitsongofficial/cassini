@@ -62,7 +62,7 @@ export async function saveCosmosTransaction(data: any) {
         }
     });
 
-    if (lastTx !== undefined && data.status !== TxStatus.Invalid) {
+    if (lastTx !== undefined && data.status !== TxStatus.Invalid && data.amount > cfg.BridgeMinFee) {
         nonce = lastTx.eth_nonce + 1;
     }
 
