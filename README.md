@@ -55,6 +55,7 @@ Copy `.env.example` file to `.env` and personalize to your needs
 | COSMOS_DENOM                     | Cosmos minimal denom                                                 |
 | COSMOS_START_HEIGHT              | Start height at which look for transfer logs                         |
 | ETH_API                          | Ethereum JSON RPC API URL (infura or similar)                        |
+| ETHEREUM_BRIDGE_ADDRESS	   | Ethereum hot wallet, with liquidity and bridge transactions	  |
 | ETHEREUM_MNEMONIC                | Ethereum bridge hot wallet private key                               |
 | ETHEREUM_TOKEN_CONTRACT_ADDRESS  | Ethereum BTSG Token Contract Address                                 |
 | ETHEREUM_BRIDGE_CONTRACT_ADDRESS | Ethereum Deposit/Bridge Contract Address                             |
