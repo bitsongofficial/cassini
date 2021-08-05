@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm";
 import { CosmosTx } from "../entity/CosmosTx";
-import { cfg } from "../config"
+import { cfg, TxStatus } from "../config"
 import { ethers } from "ethers";
 import { EthereumTx } from "../entity/EthereumTx";
 
@@ -62,7 +62,7 @@ export async function saveCosmosTransaction(data: any) {
         }
     });
 
-    if (lastTx !== undefined) {
+    if (lastTx !== undefined && data.status !== TxStatus.Invalid) {
         nonce = lastTx.eth_nonce + 1;
     }
 
