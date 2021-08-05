@@ -130,15 +130,21 @@ export async function processQueue() {
 
         const amountToSend = tx.amount - tx.fee;
 
-        const receipt = await erc20.transfer(tx.to, convertCosmosBalanceToWei(amountToSend), txOptions)
+        if (amountToSend > 0) {
+                
+            const receipt = await erc20.transfer(tx.to, convertCosmosBalanceToWei(amountToSend), txOptions)
 
-        tx.eth_nonce = receipt.nonce;
-        tx.eth_hash = receipt.hash;
-        tx.migrated_amount = amountToSend;
-        tx.status = TxStatus.Completed;
-        await repo.save(tx)
+            tx.eth_nonce = receipt.nonce;
+            tx.eth_hash = receipt.hash;
+            tx.migrated_amount = amountToSend;
+            tx.status = TxStatus.Completed;
+            await repo.save(tx)
 
-        console.log(`Relayed ${tx.amount} from Cosmos to Ethereum. Tx: ${tx.eth_hash}`)
+            console.log(`Relayed ${tx.amount} from Cosmos to Ethereum. Tx: ${tx.eth_hash}`)
+        } else {
+            // Mark tx as invalid, and do not increase nonce
+            tx.status = TxStatus.Invalid;
+            await repo.save(tx)
+        }
     }
-
 }
