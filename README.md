@@ -99,7 +99,7 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 `0x4d439d3a5bad256433461b80a06c4ab452734a4a`
 
 **Min amount accepted by the relayer to transfer**
-`10 BTTT`
+`11 BTTT`
 
 ## Test transfer from Cosmos to Ethereum
 
