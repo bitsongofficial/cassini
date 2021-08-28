@@ -1,5 +1,4 @@
-import { 
-    CosmosClient, 
+import {
     Secp256k1HdWallet,
     SigningCosmosClient,
     parseCoins,
@@ -7,7 +6,17 @@ import {
     GasPrice,
     BroadcastMode
 } from "@cosmjs/launchpad";
-import {Secp256k1HdWalletOptions} from "@cosmjs/amino"
+
+import {
+    IndexedTx,
+    StargateClient
+} from "@cosmjs/stargate";
+
+import {
+    decodeTxRaw
+} from "@cosmjs/proto-signing"
+
+import { Secp256k1HdWalletOptions } from "@cosmjs/amino"
 import { cfg, TxStatus } from "../config"
 import { getCosmosTransaction, saveCosmosTransaction } from "./utils";
 import { ethers } from "ethers";
@@ -18,20 +27,32 @@ import * as eth from "./ethereum"
 import BN from "bignumber.js"
 import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
 
-function setupClient() {
-    return new CosmosClient(cfg.CosmosApi)
+async function getTransactionTimestamp(tx: IndexedTx, client: StargateClient) {
+
+    // Tx timestamp is the same of block timestamp
+    const block = await client.getBlock(tx.height);
+
+    return block.header.time
+}
+
+function decodeTx(tx: IndexedTx) {
+    return decodeTxRaw(tx.tx);
+}
+
+async function setupClient() {
+    return await StargateClient.connect(cfg.CosmosApi)
 }
 
 async function setupSigningClient() {
 
-     const path: HdPath = [
+    const path: HdPath = [
         Slip10RawIndex.hardened(44),
         Slip10RawIndex.hardened(639),
         Slip10RawIndex.hardened(0),
         Slip10RawIndex.normal(0),
         Slip10RawIndex.normal(0),
-     ];
-     
+    ];
+
     let options: Secp256k1HdWalletOptions = {
         bip39Password: undefined,
         hdPaths: [path],
@@ -114,7 +135,7 @@ export async function isAddress(address: string) {
         if (decoded) {
             return true;
         }
-    } catch(e) {
+    } catch (e) {
         return false
     }
 
@@ -122,15 +143,14 @@ export async function isAddress(address: string) {
 }
 
 export async function getCurrentHeight() {
-
-    const client = setupClient();
+    const client = await setupClient();
     return await client.getHeight();
 }
 
 export async function parseBlock(height: number) {
     console.log(`Parsing Cosmos Mainnet Block #${height}...`)
 
-    const client = setupClient();
+    const client = await setupClient();
 
     const txs = await client.searchTx({ height: height, sentFromOrTo: cfg.CosmosBridgeAddress })
 
@@ -143,8 +163,11 @@ export async function parseBlock(height: number) {
             continue;
         }
 
+        // decode tx
+        const decodedTx = decodeTx(tx);
+
         // Check ETH Address
-        const ETHAddress = tx.tx.value.memo;
+        const ETHAddress = decodedTx.body.memo;
         var status = TxStatus.Processing;
 
         // Check valid address
@@ -168,7 +191,7 @@ export async function parseBlock(height: number) {
                 to: ETHAddress,
                 hash: tx.hash,
                 status,
-                timestamp: tx.timestamp
+                timestamp: await getTransactionTimestamp(tx, client)
             }
 
             console.log(data)
@@ -184,23 +207,27 @@ export async function parseBlock(height: number) {
     return txs.length
 }
 
-export function sumMsgsAmounts(tx) {
+
+export function sumMsgsAmounts(tx: IndexedTx) {
+
+    // decode tx
+    const logs = JSON.parse(tx.rawLog);
 
     let amount = 0;
     let from = "";
 
-    if (tx.logs !== undefined) {
+    if (logs !== undefined) {
 
-        for (let log of tx.logs) {
+        for (let log of logs) {
             for (let event of log.events) {
 
                 if (event.type === "transfer") {
-                    
+
                     let recipient = event.attributes.find(a => a.key === "recipient");
                     let sender = event.attributes.find(a => a.key === "sender");
                     let amountData = event.attributes.find(a => a.key === "amount");
 
-                    if (recipient == undefined || sender == undefined || amount  == undefined) {
+                    if (recipient == undefined || sender == undefined || amount == undefined) {
                         continue;
                     }
 
@@ -215,7 +242,7 @@ export function sumMsgsAmounts(tx) {
                         if (coin.denom !== cfg.CosmosDenom) {
                             continue;
                         }
-    
+
                         amount += parseInt(coin.amount);
                     }
 
@@ -229,8 +256,11 @@ export function sumMsgsAmounts(tx) {
     return [from, amount]
 }
 
-export function getAddressFromMemo(tx: any) {
-    const ETHAddress = tx.tx.value.memo;
+export function getAddressFromMemo(tx: IndexedTx) {
+    // decode tx
+    const decodedTx = decodeTx(tx);
+
+    const ETHAddress = decodedTx.body.memo;
     if (!ethers.utils.isAddress(ETHAddress)) {
         return null;
     }
@@ -240,7 +270,7 @@ export function getAddressFromMemo(tx: any) {
 
 // This function double check that a specific tx hash has correct amount, from and to
 export async function checkTxAmounts(hash: string, internalAmount: number, internalFrom: string, to: string) {
-    const client = setupClient();
+    const client = await setupClient();
 
     const tx = await client.getTx(hash)
     const ETHAddress = getAddressFromMemo(tx)
