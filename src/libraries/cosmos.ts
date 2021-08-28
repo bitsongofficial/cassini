@@ -1,22 +1,18 @@
 import {
-    Secp256k1HdWallet,
-    SigningCosmosClient,
-    parseCoins,
-    coins,
-    GasPrice,
-    BroadcastMode
-} from "@cosmjs/launchpad";
-
-import {
     IndexedTx,
-    StargateClient
+    StargateClient,
+    SigningStargateClient,
+    calculateFee,
+    GasPrice,
+    coins,
+    parseCoins
 } from "@cosmjs/stargate";
 
 import {
     decodeTxRaw
 } from "@cosmjs/proto-signing"
 
-import { Secp256k1HdWalletOptions } from "@cosmjs/amino"
+import { Secp256k1HdWallet, Secp256k1HdWalletOptions } from "@cosmjs/amino"
 import { cfg, TxStatus } from "../config"
 import { getCosmosTransaction, saveCosmosTransaction } from "./utils";
 import { ethers } from "ethers";
@@ -43,7 +39,7 @@ async function setupClient() {
     return await StargateClient.connect(cfg.CosmosApi)
 }
 
-async function setupSigningClient() {
+async function setupWallet() {
 
     const path: HdPath = [
         Slip10RawIndex.hardened(44),
@@ -60,10 +56,11 @@ async function setupSigningClient() {
     }
 
     const wallet = await Secp256k1HdWallet.fromMnemonic(cfg.CosmosMnemonic, options);
-    const [{ address }] = await wallet.getAccounts();
+    return wallet
+}
 
-    console.log(address)
-    const client = new SigningCosmosClient(cfg.CosmosApi, address, wallet, GasPrice.fromString(cfg.CosmosGasPrice));
+async function setupSigningClient(wallet: Secp256k1HdWallet) {
+    const client = await SigningStargateClient.connectWithSigner(cfg.CosmosApi, wallet);
     return client;
 }
 
@@ -106,9 +103,15 @@ export async function processQueue() {
             const convAmount = parseInt(convertWeiToUbtsg(amountToSend.toString()));
 
             // We can send transaction cosmos side
-            const client = await setupSigningClient();
+            const wallet = await setupWallet();
+            const client = await setupSigningClient(wallet);
 
-            const result = await client.sendTokens(tx.to, coins(convAmount, cfg.CosmosDenom), "bridge");
+            const [{ address }] = await wallet.getAccounts();
+
+            // calculate fee
+            const fee = calculateFee(200000, GasPrice.fromString(cfg.CosmosGasPrice));
+
+            const result = await client.sendTokens(address, tx.to, coins(convAmount, cfg.CosmosDenom), fee, "bridge");
 
             // todo
             tx.cosmos_nonce = 0;
