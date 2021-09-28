@@ -15,7 +15,7 @@ export async function startBridge(connection: Connection) {
     var syncing = false;
 
     // Start Cosmos Blocks Parsing
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule(cfg.CosmosWatchInterval, async () => {
         if (syncing) {
             console.log("Skipping cosmos sync because already running.")
             return;
@@ -44,7 +44,7 @@ export async function startBridge(connection: Connection) {
     
     // Start Ethereum Blocks Parsing
     var syncingEth = false;
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule(cfg.EthereumWatchInterval, async () => {
 
         if (syncingEth) {
             console.log("Skipping ethereum sync because already running.")
@@ -74,7 +74,7 @@ export async function startBridge(connection: Connection) {
 
     // Start Ethereum Transaction Sending
     var processingEth = false;
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule(cfg.EthereumSendingInterval, async () => {
         if (processingEth) {
             console.log("Skipping ethereum send because already running.")
             return;
@@ -93,7 +93,7 @@ export async function startBridge(connection: Connection) {
 
     // Start Cosmos Transaction Sending
     var processingCosmos = false;
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule(cfg.CosmosSendingInterval, async () => {
         if (processingCosmos) {
             console.log("Skipping ethereum send because already running.")
             return;

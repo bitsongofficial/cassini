@@ -44,25 +44,38 @@ The bridge will now be active, looking for onchain events on one side and sendin
 
 Copy `.env.example` file to `.env` and personalize to your needs
 
-| param                            | description                                                          |
-| -------------------------------- | -------------------------------------------------------------------- |
-| ETHEREUM_SEND_INTERVAL           | Interval at which transactions are broacasted on Ethereum Side       |
-| COSMOS_SEND_INTERVAL             | Interval at which transactions are broacasted on Mainnet Cosmos Side |
-| COSMOS_MAINNET_API               | LCD Api of Cosmos Side (https://lcd-bitsong.itastakers.com)          |
-| COSMOS_BRIDGE_ADDRESS            | Cosmos hot wallet, with liquidity and bridge transactions            |
-| COSMOS_MNEMONIC                  | Private key of cosmos hot wallet                                     |
-| COSMOS_GAS_PRICE                 | Default gas price cosmos side                                        |
-| COSMOS_DENOM                     | Cosmos minimal denom                                                 |
-| COSMOS_START_HEIGHT              | Start height at which look for transfer logs                         |
-| ETH_API                          | Ethereum JSON RPC API URL (infura or similar)                        |
-| ETHEREUM_MNEMONIC                | Ethereum bridge hot wallet private key                               |
-| ETHEREUM_TOKEN_CONTRACT_ADDRESS  | Ethereum BTSG Token Contract Address                                 |
-| ETHEREUM_BRIDGE_CONTRACT_ADDRESS | Ethereum Deposit/Bridge Contract Address                             |
-| ETHEREUM_LOG_TOPICS              | Topic to look for in Ethereum transaction Logs                       |
-| ETHEREUM_START_HEIGHT            | Start height at which look for `hasBeenAddedd` logs                  |
-| ETHEREUM_CONFIRMATIONS           | Min number of confirmation before relay from ETH to Cosmos           |
-| BRIDGE_MIN_FEE                   | Mimimum fee for relay in BTSG                                        |
-| BRIDGE_FEE_PERCENT               | Fee % for tx relay (default 0.5%)                                    |
+| param                            | description                                                 |
+| -------------------------------- | ----------------------------------------------------------- |
+| COSMOS_WATCH_INTERVAL            | Crontab definition for cosmos block indexer                 |
+| ETHEREUM_WATCH_INTERVAL          | Crontab definition for ethereum block indexer               |
+| ETHEREUM_SEND_INTERVAL           | Crontab definition for Ethereum tx sender                   |
+| COSMOS_SEND_INTERVAL             | Crontab definition for Cosmos tx sender                     |
+| COSMOS_MAINNET_API               | LCD Api of Cosmos Side (https://lcd-bitsong.itastakers.com) |
+| COSMOS_BRIDGE_ADDRESS            | Cosmos hot wallet, with liquidity and bridge transactions   |
+| COSMOS_MNEMONIC                  | Private key of cosmos hot wallet                            |
+| COSMOS_GAS_PRICE                 | Default gas price cosmos side                               |
+| COSMOS_DENOM                     | Cosmos minimal denom                                        |
+| COSMOS_START_HEIGHT              | Start height at which look for transfer logs                |
+| ETH_API                          | Ethereum JSON RPC API URL (infura or similar)               |
+| ETHEREUM_MNEMONIC                | Ethereum bridge hot wallet private key                      |
+| ETHEREUM_TOKEN_CONTRACT_ADDRESS  | Ethereum BTSG Token Contract Address                        |
+| ETHEREUM_BRIDGE_CONTRACT_ADDRESS | Ethereum Deposit/Bridge Contract Address                    |
+| ETHEREUM_LOG_TOPICS              | Topic to look for in Ethereum transaction Logs              |
+| ETHEREUM_START_HEIGHT            | Start height at which look for `hasBeenAddedd` logs         |
+| ETHEREUM_CONFIRMATIONS           | Min number of confirmation before relay from ETH to Cosmos  |
+| BRIDGE_MIN_FEE                   | Mimimum fee for relay in BTSG                               |
+| BRIDGE_FEE_PERCENT               | Fee % for tx relay (default 0.5%)                           |
+| TYPEORM_CONNECTION               | Database connection type                                    |
+| TYPEORM_HOST                     | Database host                                               |
+| TYPEORM_USERNAME                 | Database username                                           |
+| TYPEORM_PASSWORD                 | Database password                                           |
+| TYPEORM_DATABASE                 | Database name                                               |
+| TYPEORM_PORT                     | Database port                                               |
+| TYPEORM_SYNCHRONIZE              | Boolean, create or not tables at start                      |
+| TYPEORM_LOGGING                  | Enable query logging (stdout)                               |
+| TYPEORM_ENTITIES                 | Entity path `src/entity/*.ts,src/modules/**/entity/*.ts`    |
+
+For TypeOrm confirguration refer to the official documentation: https://typeorm.io/#/using-ormconfig
 
 # Schema
 
@@ -104,9 +117,11 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 ## Test transfer from Cosmos to Ethereum
 
 1. Install bitsongcli binary at version [v0.7.1](https://github.com/bitsongofficial/go-bitsong/releases/tag/v0.7.1)
-  - `wget https://github.com/bitsongofficial/go-bitsong/releases/download/v0.7.1/bitsongcli`
-  - `chmod +x bitsongcli`
-  - `./bitsongcli version`  
+
+- `wget https://github.com/bitsongofficial/go-bitsong/releases/download/v0.7.1/bitsongcli`
+- `chmod +x bitsongcli`
+- `./bitsongcli version`
+
 3. Transfer the tokens you want to bridge with the recepient ethereum address in the memo field of the transaction:
 4. `bitsongcli tx send {from} bitsong14ayssdzwd6tdspcnn6zyhfwvlh6cv93cxtd0fz 10000000000ubtsg --memo "0x{your eth address}" --node tcp://bridge-test.bitsong.network:26657 --chain-id bitsong-bridge-1` **Unit**: 1BTTT = 1000000ubtsg
 5. You will receive tokens after a few minutes on Ethereum. Depending on network congestion
@@ -117,10 +132,9 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 
 ![screenshot1](./images/screenshot1.png)
 
-**_spender** must be set to the Bridge Contract address `0x234745EcfeDfa32113D8203462A23ba410e0FC87`
+**\_spender** must be set to the Bridge Contract address `0x234745EcfeDfa32113D8203462A23ba410e0FC87`
 
-**_value** must be greater than the amount you want to transfer, in wei. you can use https://eth-converter.com/ to convert. For example, if you want to transfer 10.000.000 BTTT, you must set it greater than `10000000000000000000000000`
-
+**\_value** must be greater than the amount you want to transfer, in wei. you can use https://eth-converter.com/ to convert. For example, if you want to transfer 10.000.000 BTTT, you must set it greater than `10000000000000000000000000`
 
 2. Transfer BTTT tokens to the bridge contract using the "deposit" function. This can be don on Etherscan with MetaMask: https://ropsten.etherscan.io/address/0x234745EcfeDfa32113D8203462A23ba410e0FC87#writeContract. Set as target the mainnet address that should receive your tokens
 
@@ -128,6 +142,5 @@ The bridge is currently deployed on `Ropsten` ETH Netowrk and `bitsong-bridge-1`
 
 **amount** is the amount of tokens you want to transfer, in wei unit.
 **target** is the bitsong address that will receive the tokens.
-
 
 3. After 12 confirmations on Ethereum network tokens will be transfered to your mainnet address.
