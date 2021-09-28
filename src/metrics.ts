@@ -1,4 +1,3 @@
-
 import * as express from "express";
 import { getRepository } from "typeorm";
 import { CosmosBlock } from "./entity/CosmosBlock";
