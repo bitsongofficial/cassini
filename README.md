@@ -74,6 +74,8 @@ Copy `.env.example` file to `.env` and personalize to your needs
 | TYPEORM_SYNCHRONIZE              | Boolean, create or not tables at start                      |
 | TYPEORM_LOGGING                  | Enable query logging (stdout)                               |
 | TYPEORM_ENTITIES                 | Entity path `src/entity/*.ts,src/modules/**/entity/*.ts`    |
+| METRICS_HOST                     | Bind IP for metrics                                         |
+| METRICS_PORT                     | Bind port for metrics                                       |
 
 For TypeOrm confirguration refer to the official documentation: https://typeorm.io/#/using-ormconfig
 

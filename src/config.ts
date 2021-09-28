@@ -25,7 +25,10 @@ export const cfg = {
     EthereumConfirmations: parseInt(process.env.ETHEREUM_CONFIRMATIONS),
     
     BridgeMinFee: parseInt(process.env.BRIDGE_MIN_FEE),
-    BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT)
+    BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT),
+
+    MetricsPort: parseInt(process.env.METRICS_PORT),
+    MetricsHost: process.env.METRICS_HOST,
 }
 
 export enum TxStatus {

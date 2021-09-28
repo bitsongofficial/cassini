@@ -4,7 +4,7 @@ import { getRepository } from "typeorm";
 import { CosmosBlock } from "./entity/CosmosBlock";
 import { EthBlock } from "./entity/EthBlock";
 import { CosmosTx } from "./entity/CosmosTx";
-import { TxStatus } from "./config";
+import { cfg, TxStatus } from "./config";
 import { EthereumTx } from "./entity/EthereumTx";
 
 export function setupMetrics() {
@@ -122,8 +122,7 @@ export function setupMetrics() {
     res.send(JSON.stringify(response))
   });
 
-
-  app.listen(3000, () => {
-      console.log("Metrics listening on http://127.0.0.1:3000")
+  app.listen(cfg.MetricsPort, cfg.MetricsHost, () => {
+      console.log(`Metrics listening on http://${cfg.MetricsHost}:${cfg.MetricsPort}`)
   });
 }
