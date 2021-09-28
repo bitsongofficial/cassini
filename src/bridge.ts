@@ -8,72 +8,107 @@ import { getRepository } from "typeorm";
 import { getCurrentHeight, parseBlock, processQueue } from "./libraries/cosmos";
 
 import * as eth from "./libraries/ethereum";
+import * as cron from "node-cron"
 
 export async function startBridge(connection: Connection) {
 
     var syncing = false;
 
     // Start Cosmos Blocks Parsing
-    setInterval(async () => {
+    cron.schedule('*/5 * * * *', async () => {
         if (syncing) {
+            console.log("Skipping cosmos sync because already running.")
             return;
         }
 
-        console.log("Querying cosmos...")
+        console.log("Task sync cosmos running " + new Date())
 
         syncing = true;
-        const cosmosBlocksRepository = getRepository(CosmosBlock);
-        const lastBlock = await cosmosBlocksRepository.findOne({
-            order: {
-                height: "DESC",
-            }
-        })
+        try {
+            const cosmosBlocksRepository = getRepository(CosmosBlock);
+            const lastBlock = await cosmosBlocksRepository.findOne({
+                order: {
+                    height: "DESC",
+                }
+            })
 
-        const lastHeight = lastBlock ? lastBlock.height : cfg.CosmosStartHeight;
-        await syncCosmos(connection, lastHeight)
+            const lastHeight = lastBlock ? lastBlock.height : cfg.CosmosStartHeight;
+            await syncCosmos(connection, lastHeight)
+        } catch (e) {
+            console.error(`Error cosmos sync: ${e.message}`)
+        }
+        
         syncing = false;
+    });
 
-    }, cfg.CosmosWatchInterval)
-
-    var syncingEth = false;
-
+    
     // Start Ethereum Blocks Parsing
-    setInterval(async () => {
+    var syncingEth = false;
+    cron.schedule('*/5 * * * *', async () => {
 
         if (syncingEth) {
+            console.log("Skipping ethereum sync because already running.")
             return;      
         }
 
-        console.log("Querying Ethereum...")
+        console.log("Task sync ethereum running " + new Date())
 
         syncingEth = true;
-        const ethBlocksRepository = getRepository(EthBlock);
-        const lastBlock = await ethBlocksRepository.findOne({
-            order: {
-                height: "DESC",
-            }
-        })
-
-        const lastHeight = lastBlock ? lastBlock.height : cfg.EthereumStartHeight;
-        await syncEthereum(connection, lastHeight)
+        try {
+            const ethBlocksRepository = getRepository(EthBlock);
+            const lastBlock = await ethBlocksRepository.findOne({
+                order: {
+                    height: "DESC",
+                }
+            })
+    
+            const lastHeight = lastBlock ? lastBlock.height : cfg.EthereumStartHeight;
+            await syncEthereum(connection, lastHeight)
+        } catch (e) {
+            console.error(`Error ethereum sync: ${e.message}`)
+        }
+        
         syncingEth = false;
-
-    }, cfg.EtheruemWatchInterval)
+    });
 
 
     // Start Ethereum Transaction Sending
-    setInterval(async () => {
-        console.log("Sending pending Ethereum txs...")
+    var processingEth = false;
+    cron.schedule('*/5 * * * *', async () => {
+        if (processingEth) {
+            console.log("Skipping ethereum send because already running.")
+            return;
+        }
 
-        await eth.processQueue();
-    }, cfg.EthereumSendingInterval)
+        processingEth = true;
+        try {
+            console.log("Sending pending Ethereum txs...")
+            await eth.processQueue();
+        } catch (e) {
+            console.error(`Error cosmos send: ${e.message}`)
+        }
+
+        processingEth = false;
+    });
 
     // Start Cosmos Transaction Sending
-    setInterval(async () => {
-        console.log("Sending pending Cosmos txs...")
+    var processingCosmos = false;
+    cron.schedule('*/5 * * * *', async () => {
+        if (processingCosmos) {
+            console.log("Skipping ethereum send because already running.")
+            return;
+        }
 
-        await processQueue();
-    }, cfg.CosmosSendingInterval)
+        processingCosmos = true;
+        try {
+            console.log("Sending pending Cosmos txs...")
+            await processQueue();
+        } catch (e) {
+            console.error(`Error ethereum send: ${e.message}`)
+        }
+
+        processingCosmos = false;
+    });
 
 }
 
@@ -82,7 +117,6 @@ async function syncCosmos(connection: Connection, startHeight: number) {
 
     console.log(`Start Syncing Cosmos From Block #${startHeight}`)
     const currentHeight = await getCurrentHeight();
-
 
     for (var b = startHeight; b <= currentHeight; b++) {
 
