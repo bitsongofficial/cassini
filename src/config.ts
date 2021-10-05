@@ -4,10 +4,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export const cfg = {
-    CosmosWatchInterval: parseInt(process.env.COSMOS_WATCH_INTERVAL),
-    EtheruemWatchInterval: parseInt(process.env.ETHEREUM_WATCH_INTERVAL),
-    EthereumSendingInterval: parseInt(process.env.ETHEREUM_SEND_INTERVAL),
-    CosmosSendingInterval: parseInt(process.env.COSMOS_SEND_INTERVAL),
+    CosmosWatchInterval: process.env.COSMOS_WATCH_INTERVAL,
+    EthereumWatchInterval: process.env.ETHEREUM_WATCH_INTERVAL,
+    EthereumSendingInterval: process.env.ETHEREUM_SEND_INTERVAL,
+    CosmosSendingInterval: process.env.COSMOS_SEND_INTERVAL,
 
     CosmosApi: process.env.COSMOS_MAINNET_API,
     CosmosBridgeAddress: process.env.COSMOS_BRIDGE_ADDRESS,
@@ -25,7 +25,10 @@ export const cfg = {
     EthereumConfirmations: parseInt(process.env.ETHEREUM_CONFIRMATIONS),
     
     BridgeMinFee: parseInt(process.env.BRIDGE_MIN_FEE),
-    BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT)
+    BridgeFeePercent: parseFloat(process.env.BRIDGE_FEE_PERCENT),
+
+    MetricsPort: parseInt(process.env.METRICS_PORT),
+    MetricsHost: process.env.METRICS_HOST,
 }
 
 export enum TxStatus {

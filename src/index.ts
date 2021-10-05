@@ -5,6 +5,8 @@ import { startBridge } from "./bridge";
 import { parseBlock } from "./libraries/cosmos";
 import { processQueue } from "./libraries/ethereum";
 
+import { setupMetrics } from "./metrics";
+
 createConnection().then(async connection => {
 
     console.log("=======")
@@ -12,6 +14,10 @@ createConnection().then(async connection => {
     console.log("Staring now...")
     console.log("=======")
 
+    // start express server to provide metrics
+    setupMetrics();
+
+    // start bridge crons
     await startBridge(connection);
 
     // await parseBlock(1022639)
