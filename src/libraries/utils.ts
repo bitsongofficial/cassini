@@ -29,10 +29,13 @@ export async function saveEthereumTransaction(data: any) {
 
   // Calculaate fee
   var fee = ethers.BigNumber.from(data.amount);
-  if (fee.gt(ethers.BigNumber.from(0))) {
+
+  if (
+    ethers.BigNumber.from(cfg.BridgeFeePercent).gt(ethers.BigNumber.from(0))
+  ) {
     fee = fee.div(100 / (cfg.BridgeFeePercent * 100));
   } else {
-    ethers.BigNumber.from(0);
+    fee = ethers.BigNumber.from(0);
   }
 
   let tx = new EthereumTx();
