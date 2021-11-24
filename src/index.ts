@@ -7,12 +7,12 @@ import { processQueue } from "./libraries/ethereum";
 
 import { setupMetrics } from "./metrics";
 
-createConnection().then(async connection => {
-
-    console.log("=======")
-    console.log("Ethereum <-> Bitsong Bridge")
-    console.log("Staring now...")
-    console.log("=======")
+createConnection()
+  .then(async (connection) => {
+    console.log("=======");
+    console.log("Ethereum <-> Bitsong Bridge");
+    console.log("Staring now...");
+    console.log("=======");
 
     // start express server to provide metrics
     setupMetrics();
@@ -23,5 +23,5 @@ createConnection().then(async connection => {
     // await parseBlock(1022639)
 
     // await processQueue()
-
-}).catch(error => console.log(error));
+  })
+  .catch((error) => console.log(error));
