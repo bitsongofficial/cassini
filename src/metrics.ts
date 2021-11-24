@@ -9,119 +9,173 @@ import { EthereumTx } from "./entity/EthereumTx";
 export function setupMetrics() {
   const app = express();
 
-  app.get('/', async (req, res) => {
-    res.send('Cassini metrics')
-  })
+  app.get("/", async (req, res) => {
+    res.json({
+      success: true,
+    });
+  });
 
   // get cosmos last sync block
-  app.get('/cosmos', async (req, res) => {
-
+  app.get("/cosmos", async (req, res) => {
     const cosmosBlocksRepository = getRepository(CosmosBlock);
     const lastBlock = await cosmosBlocksRepository.findOne({
-        order: {
-            height: "DESC",
-        }
-    })
+      order: {
+        height: "DESC",
+      },
+    });
 
-    let response = {}
+    let response = {};
 
     if (!lastBlock) {
       response = {
         success: false,
-        message: 'No blocks found'
-      }
+        message: "No blocks found",
+      };
     } else {
       response = {
         success: true,
-        data: lastBlock
-      }
+        data: lastBlock,
+      };
     }
 
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(response))
-  })
+    res.json(response);
+  });
 
   // get ethereum last sync block
-  app.get('/ethereum', async (req, res) => {
-
+  app.get("/ethereum", async (req, res) => {
     const cosmosBlocksRepository = getRepository(EthBlock);
     const lastBlock = await cosmosBlocksRepository.findOne({
-        order: {
-            height: "DESC",
-        }
-    })
+      order: {
+        height: "DESC",
+      },
+    });
 
-    let response = {}
+    let response = {};
 
     if (!lastBlock) {
       response = {
         success: false,
-        message: 'No blocks found'
-      }
+        message: "No blocks found",
+      };
     } else {
       response = {
         success: true,
-        data: lastBlock
-      }
+        data: lastBlock,
+      };
     }
 
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(response))
-  })
+    res.json(response);
+  });
 
   // get pending cosmos->ethereum tx
-  app.get('/cosmos/pending', async (req, res) => {
+  app.get("/cosmos/pending", async (req, res) => {
     const txRepo = getRepository(CosmosTx);
 
     const pendingTxs = await txRepo.find({
-      status: TxStatus.Processing
-  })
+      status: TxStatus.Processing,
+    });
 
-    let response = {}
+    let response = {};
 
     if (!pendingTxs || pendingTxs.length === 0) {
       response = {
         success: false,
-        message: 'No txs found'
-      }
+        message: "No txs found",
+      };
     } else {
       response = {
         success: true,
-        data: pendingTxs
-      }
+        data: pendingTxs,
+      };
     }
 
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(response))
+    res.json(response);
   });
 
   // get pending ethereum->cosmos tx
-  app.get('/ethereum/pending', async (req, res) => {
+  app.get("/ethereum/pending", async (req, res) => {
     const txRepo = getRepository(EthereumTx);
 
     const pendingTxs = await txRepo.find({
-      status: TxStatus.Processing
-  })
+      status: TxStatus.Processing,
+    });
 
-    let response = {}
+    let response = {};
 
     if (!pendingTxs || pendingTxs.length === 0) {
       response = {
         success: false,
-        message: 'No txs found'
-      }
+        message: "No txs found",
+      };
     } else {
       response = {
         success: true,
-        data: pendingTxs
-      }
+        data: pendingTxs,
+      };
     }
 
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(response))
+    res.json(response);
+  });
+
+  // get ethereum->cosmos tx detail
+  app.get("/ethereum/tx/:hash", async (req, res) => {
+    const txRepo = getRepository(EthereumTx);
+
+    const tx = await txRepo.findOne({
+      hash: req.params.hash,
+    });
+
+    let response = {};
+
+    if (tx === undefined) {
+      response = {
+        success: false,
+        message: "No tx found",
+      };
+    } else {
+      response = {
+        success: true,
+        data: tx,
+      };
+    }
+
+    res.json(response);
+  });
+
+  // get ethereum->cosmos txs by from address
+  app.get("/ethereum/from/:from", async (req, res) => {
+    const txRepo = getRepository(EthereumTx);
+
+    const txs = await txRepo.find({
+      where: {
+        from: req.params.from,
+      },
+      order: {
+        id: "DESC",
+      },
+      take: 50,
+    });
+
+    let response = {};
+
+    if (!txs || txs.length === 0) {
+      response = {
+        success: false,
+        message: "No txs found",
+      };
+    } else {
+      response = {
+        success: true,
+        data: txs,
+      };
+    }
+
+    res.json(response);
   });
 
   app.listen(cfg.MetricsPort, cfg.MetricsHost, () => {
-      console.log(`Metrics listening on http://${cfg.MetricsHost}:${cfg.MetricsPort}`)
+    console.log(
+      `Cassini API server on http://${cfg.MetricsHost}:${cfg.MetricsPort}`
+    );
   });
 }
