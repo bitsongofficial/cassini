@@ -14,31 +14,31 @@ export async function startBridge(connection: Connection) {
   var syncing = false;
 
   // Start Cosmos Blocks Parsing
-  cron.schedule(cfg.CosmosWatchInterval, async () => {
-    if (syncing) {
-      console.log("Skipping cosmos sync because already running.");
-      return;
-    }
+  // cron.schedule(cfg.CosmosWatchInterval, async () => {
+  //   if (syncing) {
+  //     console.log("Skipping cosmos sync because already running.");
+  //     return;
+  //   }
 
-    console.log("Task sync cosmos running " + new Date());
+  //   console.log("Task sync cosmos running " + new Date());
 
-    syncing = true;
-    try {
-      const cosmosBlocksRepository = getRepository(CosmosBlock);
-      const lastBlock = await cosmosBlocksRepository.findOne({
-        order: {
-          height: "DESC",
-        },
-      });
+  //   syncing = true;
+  //   try {
+  //     const cosmosBlocksRepository = getRepository(CosmosBlock);
+  //     const lastBlock = await cosmosBlocksRepository.findOne({
+  //       order: {
+  //         height: "DESC",
+  //       },
+  //     });
 
-      const lastHeight = lastBlock ? lastBlock.height : cfg.CosmosStartHeight;
-      await syncCosmos(connection, lastHeight);
-    } catch (e) {
-      console.error(`Error cosmos sync: ${e.message}`);
-    }
+  //     const lastHeight = lastBlock ? lastBlock.height : cfg.CosmosStartHeight;
+  //     await syncCosmos(connection, lastHeight);
+  //   } catch (e) {
+  //     console.error(`Error cosmos sync: ${e.message}`);
+  //   }
 
-    syncing = false;
-  });
+  //   syncing = false;
+  // });
 
   // Start Ethereum Blocks Parsing
   var syncingEth = false;
@@ -69,23 +69,23 @@ export async function startBridge(connection: Connection) {
   });
 
   // Start Ethereum Transaction Sending
-  var processingEth = false;
-  cron.schedule(cfg.EthereumSendingInterval, async () => {
-    if (processingEth) {
-      console.log("Skipping ethereum send because already running.");
-      return;
-    }
+  // var processingEth = false;
+  // cron.schedule(cfg.EthereumSendingInterval, async () => {
+  //   if (processingEth) {
+  //     console.log("Skipping ethereum send because already running.");
+  //     return;
+  //   }
 
-    processingEth = true;
-    try {
-      console.log("Sending pending Ethereum txs...");
-      await eth.processQueue();
-    } catch (e) {
-      console.error(`Error cosmos send: ${e.message}`);
-    }
+  //   processingEth = true;
+  //   try {
+  //     console.log("Sending pending Ethereum txs...");
+  //     await eth.processQueue();
+  //   } catch (e) {
+  //     console.error(`Error cosmos send: ${e.message}`);
+  //   }
 
-    processingEth = false;
-  });
+  //   processingEth = false;
+  // });
 
   // Start Cosmos Transaction Sending
   var processingCosmos = false;
@@ -108,28 +108,28 @@ export async function startBridge(connection: Connection) {
 }
 
 // Cosmos watcher
-async function syncCosmos(connection: Connection, startHeight: number) {
-  console.log(`Start Syncing Cosmos From Block #${startHeight}`);
-  const currentHeight = await getCurrentHeight();
+// async function syncCosmos(connection: Connection, startHeight: number) {
+//   console.log(`Start Syncing Cosmos From Block #${startHeight}`);
+//   const currentHeight = await getCurrentHeight();
 
-  for (var b = startHeight; b <= currentHeight; b++) {
-    // console.log("check ", b)
-    if (await blockExistsInDB(CosmosBlock, b)) {
-      continue;
-    }
+//   for (var b = startHeight; b <= currentHeight; b++) {
+//     // console.log("check ", b)
+//     if (await blockExistsInDB(CosmosBlock, b)) {
+//       continue;
+//     }
 
-    const tx_count = await parseBlock(b);
+//     const tx_count = await parseBlock(b);
 
-    // Save block in db
-    const block = new CosmosBlock();
-    block.height = b;
-    block.tx_count = tx_count;
-    block.parsed_at = new Date();
+//     // Save block in db
+//     const block = new CosmosBlock();
+//     block.height = b;
+//     block.tx_count = tx_count;
+//     block.parsed_at = new Date();
 
-    // Save new block in db
-    await connection.manager.save(block);
-  }
-}
+//     // Save new block in db
+//     await connection.manager.save(block);
+//   }
+// }
 
 // Ethereum Watcher
 async function syncEthereum(connection: Connection, startHeight: number) {

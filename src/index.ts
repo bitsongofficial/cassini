@@ -10,7 +10,7 @@ import { setupMetrics } from "./metrics";
 createConnection()
   .then(async (connection) => {
     console.log("=======");
-    console.log("Ethereum <-> Bitsong Bridge");
+    console.log("Ethereum -> Bitsong Bridge");
     console.log("Staring now...");
     console.log("=======");
 
