@@ -14,21 +14,16 @@
       "allowSyntheticDefaultImports": true,
       "esModuleInterop": true,
       "importHelpers": true,
-      "noImplicitAny": true,
+      "noImplicitAny": false,
       "declaration": true,
       "noFallthroughCasesInSwitch": true,
-      "noImplicitReturns": true,
+      "noImplicitReturns": false,
       "stripInternal": true,
       "pretty": true,
-      "strictNullChecks": true,
-      "noUnusedLocals": true,
+      "strictNullChecks": false,
+      "noUnusedLocals": false,
       "downlevelIteration": true
    },
-   "include": [
-      "sample",
-      "src",
-      "test"
-    ],
     "exclude": [
         "tmp",
         "temp",
