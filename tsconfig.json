@@ -10,6 +10,29 @@
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true
-   }
+      "sourceMap": true,
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,
+      "importHelpers": true,
+      "noImplicitAny": true,
+      "declaration": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitReturns": true,
+      "stripInternal": true,
+      "pretty": true,
+      "strictNullChecks": true,
+      "noUnusedLocals": true,
+      "downlevelIteration": true
+   },
+   "include": [
+      "sample",
+      "src",
+      "test"
+    ],
+    "exclude": [
+        "tmp",
+        "temp",
+        "build",
+        "node_modules"
+    ]
 }
