@@ -106,7 +106,6 @@ export async function processQueue() {
       const client = await setupSigningClient(wallet);
 
       const [{ address }] = await wallet.getAccounts();
-      console.log(tx.to);
 
       // calculate fee
       const fee = calculateFee(200000, GasPrice.fromString(cfg.CosmosGasPrice));
@@ -116,7 +115,7 @@ export async function processQueue() {
         tx.to,
         coins(convAmount, cfg.CosmosDenom),
         fee,
-        "bridge"
+        "Swap from ETH to BTSG Mainnet - " + tx.hash
       );
 
       // todo
